@@ -1,1 +1,57 @@
 # handin7-pad
+
+dotnet fsi -r FsLexYacc.Runtime.dll Absyn.fs CPar.fs CLex.fs Parse.fs Interp.fs ParseAndRun.fs Machine.fs Comp.fs ParseAndComp.fs
+
+## Exercises
+
+### 8.1
+```c
+24 19 1 5 25 15 1 13 0 1 1 0 0 12 15 -1 16 43 13 0 1 1 11 22 15 -1 13 0 1 1 13 0 1 1 11 0 1 1 12 15 -1 15 0 13 0 1 1 11 13 0 0 1 11 7 18 18 15 -1 21 0
+
+===
+
+0 LDARGS
+1 CALL 1 5
+4 STOP
+    Label "L1"
+5 INCSP 1
+7 GETBP
+8 CSTI 1
+10 ADD
+11 CSTI 0
+13 STI
+14 INCSP -1
+16 GOTO 43
+    Label "L2"
+18 GETBP
+19 CSTI 1
+21 ADD
+22 LDI
+23 PRINTI
+24 INCSP -1
+26 GETBP
+27 CSTI 1
+29 ADD
+30 GETBP
+31 CSTI 1
+33 ADD
+34 LDI
+35 CSTI 1
+37 ADD
+38 STI
+39 INCSP -1
+41 INCSP 0
+    Label "L3"
+43 GETBP
+44 CSTI 1
+46 ADD
+47 LDI
+48 GETBP
+49 CSTI 0
+51 ADD
+52 LDI
+53 LT
+54 IFNZRO 18
+56 INCSP -1
+58 RET 0
+```
