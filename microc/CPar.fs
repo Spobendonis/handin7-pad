@@ -876,7 +876,7 @@ let _fsyacc_reductions ()  =    [|
                 (
                    (
 # 125 "CPar.fsy"
-                                                               PreInc(Access)
+                                                               PreInc(_2)          
                    )
 # 125 "CPar.fsy"
                  : 'ExprNotAccess));
@@ -887,7 +887,7 @@ let _fsyacc_reductions ()  =    [|
                 (
                    (
 # 126 "CPar.fsy"
-                                                               PreDec(Access)
+                                                               PreDec(_2)          
                    )
 # 126 "CPar.fsy"
                  : 'ExprNotAccess));

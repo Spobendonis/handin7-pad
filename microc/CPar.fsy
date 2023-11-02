@@ -122,8 +122,8 @@ ExprNotAccess:
   | NOT Expr                            { Prim1("!", $2)      }
   | PRINT Expr                          { Prim1("printi", $2) }
   | PRINTLN                             { Prim1("printc", nl) }
-  | PREINC Access                       { PreInc(Access)}
-  | PREDEC Access                       { PreDec(Access)}
+  | PREINC Access                       { PreInc($2)          }
+  | PREDEC Access                       { PreDec($2)          }
   | Expr PLUS  Expr                     { Prim2("+",  $1, $3) }
   | Expr MINUS Expr                     { Prim2("-",  $1, $3) }
   | Expr TIMES Expr                     { Prim2("*",  $1, $3) }
