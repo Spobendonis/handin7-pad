@@ -466,6 +466,182 @@ L2:
     STOP
 ```
 
+(ii)
+
+Bytecode from compiling `ex13.c`, written out in a more readable form
+```
+    LDARGS
+    CALL 1 "L1"
+    STOP
+L1: 
+    INCSP 1
+    GETBP
+    CSTI 1
+    ADD
+    CSTI 1889
+    STI
+    INCSP -1
+    GOTO "L3"
+L2:
+    GETBP
+    CSTI 1
+    ADD
+    GETBP
+    CSTI 1
+    ADD
+    LDI
+    CSTI 1
+    ADD
+    STI
+    INCSP -1
+    GETBP
+    CSTI 1
+    ADD
+    LDI
+    CSTI 4
+    MOD
+    CSTI 0
+    EQ
+    IFZERO "L7"
+    GETBP
+    CSTI 1
+    ADD
+    LDI
+    CSTI 100
+    MOD
+    CSTI 0
+    EQ
+    NOT
+    IFNZRO "L9"
+    GETBP
+    CSTI 1
+    ADD
+    LDI
+    CSTI 400
+    MOD
+    CSTI 0
+    EQ
+    GOTO "L8"
+L9: 
+    CSTI 1
+L8: 
+    GOTO "L6"
+L7:
+    CSTI 0
+L6:
+    IFZERO "L4"
+    GETBP
+    CSTI 1
+    ADD
+    LDI
+    PRINTI
+    INCSP -1
+    GOTO "L5"
+L4:
+    INCSP 0
+L5:
+    INCSP 0
+L3:
+    GETBP
+    CSTI 1
+    ADD
+    LDI
+    GETBP
+    CSTI 0
+    ADD
+    LDI
+    LT
+    IFNZRO "L2"
+    INCSP -1
+    RET 0
+```
+
+### 8.5
+
+`Àbsyn.fs`
+```fsharp
+and expr =                     
+  ...
+  | Cond of expr * expr * expr       // <NEW>
+  ...
+```
+
+`CLex.fsl`
+```
+rule Token = parse
+  ...
+  | '?'             { QUESTION }    // <NEW>
+  | ':'             { COLON }       // <NEW>
+  ...
+```
+
+`CPar.fsy`
+```
+...
+%token QUESTION COLON                                         // <NEW> 
+...
+ExprNotAccess:
+  ...
+  | LPAR Expr QUESTION Expr COLON Expr RPAR { Cond($2, $4, $6) } // <NEW>
+  ...
+```
+
+`Comp.fs`
+```fsharp
+and cExpr (e : expr) (varEnv : varEnv) (funEnv : funEnv) : instr list = 
+    match e with
+    ...
+    | Cond(eCond, e1, e2) ->                          // <NEW>
+      let labelse = newLabel()                        // <NEW>
+      let labend  = newLabel()                        // <NEW>
+      cExpr eCond varEnv funEnv @ [IFZERO labelse]    // <NEW>
+      @ cExpr e1 varEnv funEnv @ [GOTO labend]        // <NEW>
+      @ [Label labelse] @ cExpr e2 varEnv funEnv      // <NEW>
+      @ [Label labend]                                // <NEW>
+    ...
+```
+
+An example program to test the conditional expression:
+`tern.c`
+```c
+void main(int n) {
+    print (n > 4 ? n : 0);
+}
+```
+
+Output from fsharp interactive when compiling `tern.c`
+```fsharp
+> open ParseAndComp;;
+> compile "tern";;
+val it: Machine.instr list =
+  [LDARGS; CALL (1, "L1"); STOP; Label "L1"; GETBP; CSTI 0; ADD; LDI; CSTI 4;
+   SWAP; LT; IFZERO "L2"; GETBP; CSTI 0; ADD; LDI; GOTO "L3"; Label "L2";
+   CSTI 0; Label "L3"; PRINTI; INCSP -1; INCSP 0; RET 0]
+```
+
+`tern.out`
+```
+24 19 1 5 25 13 0 0 1 11 0 4 10 7 17 23 13 0 0 1 11 16 25 0 0 22 15 -1 15 0 21 0
+```
+
+Running the program on different inputs:
+```
+$ java Machine tern.out 4
+0 
+Ran 0.014 seconds
+$ java Machine tern.out 3
+0 
+Ran 0.014 seconds
+$ java Machine tern.out 6
+6 
+Ran 0.013 seconds
+$ java Machine tern.out 5
+5 
+Ran 0.014 seconds
+```
+
+They all give the expected result.
+
 ### 8.6
 
 IS done -> TODO: upload to README
