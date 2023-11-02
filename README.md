@@ -454,7 +454,6 @@ L3:
 ```
 
 ```
-0 20000000 16 7 0 1 2 9 18 4 25
     CSTI 20000000
     GOTO "L2"
 L1:
@@ -465,6 +464,8 @@ L2:
     IFNZRO "L1"
     STOP
 ```
+
+`ex8.c` is a lot slower because it has tons of overhead in comparison. It takes a total of 17 instructions just to decrement by 1.
 
 (ii)
 
@@ -644,4 +645,97 @@ They all give the expected result.
 
 ### 8.6
 
-IS done -> TODO: upload to README
+`CLex.fsl`
+```
+let keyword s =
+    match s with
+    ...
+    | "switch"  -> SWITCH   //<NEW>
+    | "case"    -> CASE     //<NEW>
+    ...
+```
+
+`CPar.fsy`
+```
+StmtM:  /* No unbalanced if-else */
+  ...
+  | SWITCH LPAR Expr RPAR LBRACE Cases RBRACE {Switch($3, $6)}        //<NEW>
+  | Block                               { $1                   }
+  ...
+
+...
+Cases:                                                                //<NEW>
+  CASE CSTINT COLON Block              { [($2, $4)] }                 //<NEW>
+  | CASE CSTINT COLON Block Cases      { ($2, $4) :: $5 }             //<NEW>
+...
+```
+
+`Absyn.fs`
+```fsharp
+and stmt =                                                         
+  ...
+  | Switch of expr * ((int * stmt) list)     // <NEW>
+```
+
+`Comp.fs`
+```fsharp
+let rec cStmt stmt (varEnv : varEnv) (funEnv : funEnv) : instr list = 
+    match stmt with
+    ...
+    | Switch (e, cases) ->                                             // <NEW>
+        let labend  = newLabel()                                       // <NEW>
+        cExpr e varEnv funEnv @ List.concat (List.map (fun c ->        // <NEW>
+          let label = newLabel()                                       // <NEW>
+          [DUP; CSTI (fst c); EQ; IFZERO label; INCSP -1] @            // <NEW>
+          (cStmt(snd c) varEnv funEnv) @                               // <NEW>
+          [GOTO labend; Label label]) cases) @                         // <NEW>
+          [INCSP -1; Label labend]                                     // <NEW>
+    ...
+```
+
+This is an example program to test the switch statement:
+`switch.c`
+```c
+void main(int n) {
+    switch (n) {
+        case 1:
+            { 
+                int i;
+                i = 16;
+                print 30;
+                print 200; 
+            }
+        case 2:
+            { print n; }
+    }
+    print 4;
+}
+```
+
+Compiling the switch program in fsharp interactive:
+```fsharp
+> open ParseAndComp;;
+> compile "switch";;
+val it: Machine.instr list =
+  [LDARGS; CALL (1, "L1"); STOP; Label "L1"; GETBP; CSTI 0; ADD; LDI; DUP;
+   CSTI 1; EQ; IFZERO "L3"; INCSP -1; INCSP 1; GETBP; CSTI 1; ADD; CSTI 16;
+   STI; INCSP -1; CSTI 30; PRINTI; INCSP -1; CSTI 200; PRINTI; INCSP -1;
+   INCSP -1; GOTO "L2"; Label "L3"; DUP; CSTI 2; EQ; IFZERO "L4"; INCSP -1;
+   GETBP; CSTI 0; ADD; LDI; PRINTI; INCSP -1; INCSP 0; GOTO "L2"; Label "L4";
+   INCSP -1; Label "L2"; CSTI 4; PRINTI; INCSP -1; INCSP 0; RET 0]
+
+```
+
+From running the compiled switch program:
+```
+$ java Machine switch.out 3
+4 
+Ran 0.013 seconds
+$ java Machine switch.out 2
+2 4 
+Ran 0.013 seconds
+$ java Machine switch.out 1
+30 200 4 
+Ran 0.013 seconds
+```
+They all return the expected result.

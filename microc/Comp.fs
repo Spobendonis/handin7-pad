@@ -123,11 +123,14 @@ let rec cStmt stmt (varEnv : varEnv) (funEnv : funEnv) : instr list =
       @ cStmt stmt1 varEnv funEnv @ [GOTO labend]
       @ [Label labelse] @ cStmt stmt2 varEnv funEnv
       @ [Label labend]
-    | Switch (e, cases) ->
-        let labend  = newLabel()
-        cExpr e varEnv funEnv @ List.concat (List.map (fun c ->
-        let label = newLabel()
-        [DUP; CSTI (fst c); EQ; IFZERO label; INCSP -1] @ (cStmt(snd c) varEnv funEnv) @ [GOTO labend; Label label]) cases) //<NEW>
+    | Switch (e, cases) ->                                             // <NEW>
+        let labend  = newLabel()                                       // <NEW>
+        cExpr e varEnv funEnv @ List.concat (List.map (fun c ->        // <NEW>
+          let label = newLabel()                                       // <NEW>
+          [DUP; CSTI (fst c); EQ; IFZERO label; INCSP -1] @            // <NEW>
+          (cStmt(snd c) varEnv funEnv) @                               // <NEW>
+          [GOTO labend; Label label]) cases) @                         // <NEW>
+          [INCSP -1; Label labend]                                     // <NEW>
     | While(e, body) ->
       let labbegin = newLabel()
       let labtest  = newLabel()

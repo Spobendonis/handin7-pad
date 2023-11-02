@@ -101,15 +101,15 @@ StmtM:  /* No unbalanced if-else */
     Expr SEMI                           { Expr($1)             }
   | RETURN SEMI                         { Return None          }
   | RETURN Expr SEMI                    { Return(Some($2))     }
+  | SWITCH LPAR Expr RPAR LBRACE Cases RBRACE {Switch($3, $6)}        //<NEW>
   | Block                               { $1                   }
-  | SWITCH LPAR Expr RPAR LBRACE Cases RBRACE {Switch($3, $6)}                              //<NEW>
   | IF LPAR Expr RPAR StmtM ELSE StmtM  { If($3, $5, $7)       }
   | WHILE LPAR Expr RPAR StmtM          { While($3, $5)        }
 ;
 
-Cases:                                                  //<NEW>
-  CASE CSTINT COLON LBRACE Stmt RBRACE               { [($2, $5)] }            //<NEW>
-  | CASE CSTINT COLON LBRACE Stmt RBRACE Cases       { ($2, $5) :: $7 }            //<NEW>
+Cases:                                                                //<NEW>
+  CASE CSTINT COLON Block              { [($2, $4)] }                 //<NEW>
+  | CASE CSTINT COLON Block Cases      { ($2, $4) :: $5 }             //<NEW>
 
 StmtU:
     IF LPAR Expr RPAR StmtM ELSE StmtU  { If($3, $5, $7)       }
