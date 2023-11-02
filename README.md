@@ -301,12 +301,6 @@ void main(int n) {
 [ 4 ]{4: STOP}
 ```
 
-### 8.2
-
-I didn't do it so Lets look at this together
-
-### 8.3
-
 ### 8.3
 
 `Absyn.fs`
@@ -470,6 +464,96 @@ L2:
     DUP
     IFNZRO "L1"
     STOP
+```
+
+(ii)
+
+Bytecode from compiling `ex13.c`, written out in a more readable form
+```
+    LDARGS
+    CALL 1 "L1"
+    STOP
+L1: 
+    INCSP 1
+    GETBP
+    CSTI 1
+    ADD
+    CSTI 1889
+    STI
+    INCSP -1
+    GOTO "L3"
+L2:
+    GETBP
+    CSTI 1
+    ADD
+    GETBP
+    CSTI 1
+    ADD
+    LDI
+    CSTI 1
+    ADD
+    STI
+    INCSP -1
+    GETBP
+    CSTI 1
+    ADD
+    LDI
+    CSTI 4
+    MOD
+    CSTI 0
+    EQ
+    IFZERO "L7"
+    GETBP
+    CSTI 1
+    ADD
+    LDI
+    CSTI 100
+    MOD
+    CSTI 0
+    EQ
+    NOT
+    IFNZRO "L9"
+    GETBP
+    CSTI 1
+    ADD
+    LDI
+    CSTI 400
+    MOD
+    CSTI 0
+    EQ
+    GOTO "L8"
+L9: 
+    CSTI 1
+L8: 
+    GOTO "L6"
+L7:
+    CSTI 0
+L6:
+    IFZERO "L4"
+    GETBP
+    CSTI 1
+    ADD
+    LDI
+    PRINTI
+    INCSP -1
+    GOTO "L5"
+L4:
+    INCSP 0
+L5:
+    INCSP 0
+L3:
+    GETBP
+    CSTI 1
+    ADD
+    LDI
+    GETBP
+    CSTI 0
+    ADD
+    LDI
+    LT
+    IFNZRO "L2"
+    INCSP -1
+    RET 0
 ```
 
 ### 8.5
