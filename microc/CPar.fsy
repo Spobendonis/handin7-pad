@@ -28,7 +28,7 @@ let nl = CstI 10
 %left SEQAND
 %left EQ NE 
 %left GT LT GE LE
-%left PREINC PREDEC
+%left PREINC PREDEC       // <NEW>
 %left PLUS MINUS
 %left TIMES DIV MOD 
 %nonassoc NOT AMP 
@@ -122,8 +122,8 @@ ExprNotAccess:
   | NOT Expr                            { Prim1("!", $2)      }
   | PRINT Expr                          { Prim1("printi", $2) }
   | PRINTLN                             { Prim1("printc", nl) }
-  | PREINC Access                       { PreInc($2)          }
-  | PREDEC Access                       { PreDec($2)          }
+  | PREINC Access                       { PreInc($2)          } // <NEW>
+  | PREDEC Access                       { PreDec($2)          } // <NEW>
   | Expr PLUS  Expr                     { Prim2("+",  $1, $3) }
   | Expr MINUS Expr                     { Prim2("-",  $1, $3) }
   | Expr TIMES Expr                     { Prim2("*",  $1, $3) }
