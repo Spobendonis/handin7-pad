@@ -644,4 +644,82 @@ They all give the expected result.
 
 ### 8.6
 
-IS done -> TODO: upload to README
+NOTE: We did not manage to fully achieve 8.6 -> we believe there is a problem in our parser
+
+"Absyn.fs"
+```fsharp
+...
+and stmt =                                                         
+  | If of expr * stmt * stmt         (* Conditional                 *)
+  | While of expr * stmt             (* While loop                  *)
+  | Expr of expr                     (* Expression statement   e;   *)
+  | Return of expr option            (* Return from method          *)
+  | Block of stmtordec list          (* Block: grouping and scope   *)
+  | Switch of expr * ((int * stmt) list)     // <NEW>
+...
+```
+
+"Comp.fs"
+```fsharp
+let rec cStmt stmt (varEnv : varEnv) (funEnv : funEnv) : instr list = 
+    match stmt with
+    ...
+    | Switch (e, cases) ->
+        let labend  = newLabel()
+        cExpr e varEnv funEnv @ List.concat (List.map (fun c ->
+        let label = newLabel()          
+        [DUP; CSTI (fst c); EQ; IFZERO label; INCSP -1] @ (cStmt(snd c) varEnv funEnv) @ [GOTO labend; Label label]) cases)
+    ...
+```
+
+"Clex.fsl"
+```
+let keyword s =
+    match s with
+    | "char"    -> CHAR 
+    | "else"    -> ELSE
+    | "false"   -> CSTBOOL 0
+    | "if"      -> IF
+    | "int"     -> INT
+    | "null"    -> NULL
+    | "print"   -> PRINT
+    | "println" -> PRINTLN
+    | "return"  -> RETURN
+    | "true"    -> CSTBOOL 1
+    | "void"    -> VOID 
+    | "while"   -> WHILE
+    | "switch"  -> SWITCH   //<NEW>
+    | "case"    -> CASE     //<NEW>
+    | _         -> NAME s
+```
+
+"CPar.fsy"
+```
+%token CHAR ELSE IF INT NULL PRINT PRINTLN RETURN VOID WHILE SWITCH //<NEW>
+%token CASE   //<NEW>
+%token QUESTION COLON                                         // <NEW> 
+%token PLUS MINUS TIMES DIV MOD
+%token PREINC PREDEC
+%token EQ NE GT LT GE LE
+%token NOT SEQOR SEQAND
+%token LPAR RPAR LBRACE RBRACE LBRACK RBRACK SEMI COMMA ASSIGN AMP
+%token EOF
+
+...
+
+StmtM:  /* No unbalanced if-else */
+    Expr SEMI                           { Expr($1)             }
+  | RETURN SEMI                         { Return None          }
+  | RETURN Expr SEMI                    { Return(Some($2))     }
+  | Block                               { $1                   }
+  | SWITCH LPAR Expr RPAR LBRACE Cases RBRACE {Switch($3, $6)}                              //<NEW>
+  | IF LPAR Expr RPAR StmtM ELSE StmtM  { If($3, $5, $7)       }
+  | WHILE LPAR Expr RPAR StmtM          { While($3, $5)        }
+;
+
+...
+
+Cases:                                                  //<NEW>
+  CASE CSTINT COLON LBRACE Stmt RBRACE               { [($2, $5)] }            //<NEW>
+  | CASE CSTINT COLON LBRACE Stmt RBRACE Cases       { ($2, $5) :: $7 }            //<NEW>
+```
