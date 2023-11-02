@@ -108,8 +108,8 @@ StmtM:  /* No unbalanced if-else */
 ;
 
 Cases:                                                  //<NEW>
-  CASE CSTINT COLON Block               { [$4] }            //<NEW>
-  | CASE CSTINT COLON Block Cases       { $4 :: Cases }            //<NEW>
+  CASE CSTINT COLON LBRACE Stmt RBRACE               { [($2, $5)] }            //<NEW>
+  | CASE CSTINT COLON LBRACE Stmt RBRACE Cases       { ($2, $5) :: $7 }            //<NEW>
 
 StmtU:
     IF LPAR Expr RPAR StmtM ELSE StmtU  { If($3, $5, $7)       }

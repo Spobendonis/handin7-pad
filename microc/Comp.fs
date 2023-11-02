@@ -122,7 +122,12 @@ let rec cStmt stmt (varEnv : varEnv) (funEnv : funEnv) : instr list =
       cExpr e varEnv funEnv @ [IFZERO labelse] 
       @ cStmt stmt1 varEnv funEnv @ [GOTO labend]
       @ [Label labelse] @ cStmt stmt2 varEnv funEnv
-      @ [Label labend]           
+      @ [Label labend]
+    | Switch (e, cases) ->
+        let labend  = newLabel()
+        cExpr e varEnv funEnv @ List.concat (List.map (fun c ->
+        let label = newLabel()
+        [DUP; CSTI (fst c); EQ; IFZERO label; INCSP -1] @ (cStmt(snd c) varEnv funEnv) @ [GOTO labend; Label label]) cases) //<NEW>
     | While(e, body) ->
       let labbegin = newLabel()
       let labtest  = newLabel()
