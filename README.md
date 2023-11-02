@@ -145,3 +145,78 @@ $ java Machine decrincrexp.out 3
 Ran 0.014 seconds
 ```
 It gives the expected output.
+
+### 8.4
+
+(i)
+
+Output from fsharp interactive:
+```fsharp
+> compile "ex8";;        
+val it: Machine.instr list =
+  [LDARGS; CALL (0, "L1"); STOP; Label "L1"; INCSP 1; GETBP; CSTI 0; ADD;
+   CSTI 20000000; STI; INCSP -1; GOTO "L3"; Label "L2"; GETBP; CSTI 0; ADD;
+   GETBP; CSTI 0; ADD; LDI; CSTI 1; SUB; STI; INCSP -1; INCSP 0; Label "L3";
+   GETBP; CSTI 0; ADD; LDI; IFNZRO "L2"; INCSP -1; RET -1]
+```
+
+The output file:
+`ex8.out`
+```
+24 19 0 5 25 15 1 13 0 0 1 0 20000000 12 15 -1 16 35 13 0 0 1 13 0 0 1 11 0 1 2 12 15 -1 15 0 13 0 0 1 11 18 18 15 -1 21 -1
+```
+
+`prog1`
+```
+0 20000000 16 7 0 1 2 9 18 4 25
+```
+`
+
+```
+    LDARGS
+    CALL (0, "L1")
+    STOP
+L1:
+    INCSP 1
+    GETBP
+    CSTI 0
+    ADD
+    CSTI 20000000
+    STI
+    INCSP -1
+    GOTO "L3"
+L2:
+    GETBP
+    CSTI 0
+    ADD
+    GETBP
+    CSTI 0
+    ADD
+    LDI
+    CSTI 1
+    SUB
+    STI
+    INCSP -1
+    INCSP 0
+L3:
+    GETBP
+    CSTI 0
+    ADD
+    LDI
+    IFNZRO "L2"
+    INCSP -1
+    RET -1
+```
+
+```
+0 20000000 16 7 0 1 2 9 18 4 25
+    CSTI 20000000
+    GOTO "L2"
+L1:
+    CSTI 1
+    SUB
+L2:
+    DUP
+    IFNZRO "L1"
+    STOP
+```
