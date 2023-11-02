@@ -16,6 +16,7 @@ let nl = CstI 10
 
 %token CHAR ELSE IF INT NULL PRINT PRINTLN RETURN VOID WHILE SWITCH //<NEW>
 %token CASE   //<NEW>
+%token QUESTION COLON                                         // <NEW> 
 %token PLUS MINUS TIMES DIV MOD
 %token PREINC PREDEC
 %token EQ NE GT LT GE LE
@@ -130,6 +131,7 @@ ExprNotAccess:
   | PRINTLN                             { Prim1("printc", nl) }
   | PREINC Access                       { PreInc($2)          } // <NEW>
   | PREDEC Access                       { PreDec($2)          } // <NEW>
+  | LPAR Expr QUESTION Expr COLON Expr RPAR { Cond($2, $4, $6) } // <NEW>
   | Expr PLUS  Expr                     { Prim2("+",  $1, $3) }
   | Expr MINUS Expr                     { Prim2("-",  $1, $3) }
   | Expr TIMES Expr                     { Prim2("*",  $1, $3) }

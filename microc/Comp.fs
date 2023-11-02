@@ -169,6 +169,13 @@ and cExpr (e : expr) (varEnv : varEnv) (funEnv : funEnv) : instr list =
     | CstI i         -> [CSTI i]
     | PreInc acc     -> cAccess acc varEnv funEnv @ [DUP; LDI; CSTI 1; ADD; STI] // <NEW>
     | PreDec acc     -> cAccess acc varEnv funEnv @ [DUP; LDI; CSTI 1; SUB; STI] // <NEW>
+    | Cond(eCond, e1, e2) ->                          // <NEW>
+      let labelse = newLabel()                        // <NEW>
+      let labend  = newLabel()                        // <NEW>
+      cExpr eCond varEnv funEnv @ [IFZERO labelse]    // <NEW>
+      @ cExpr e1 varEnv funEnv @ [GOTO labend]        // <NEW>
+      @ [Label labelse] @ cExpr e2 varEnv funEnv      // <NEW>
+      @ [Label labend]                                // <NEW>
     | Addr acc       -> cAccess acc varEnv funEnv
     | Prim1(ope, e1) ->
       cExpr e1 varEnv funEnv
